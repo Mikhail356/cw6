@@ -1,11 +1,9 @@
-from bs4 import BeautifulSoup
-from omegaconf import OmegaConf
 import requests
 import re
-
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import nltk
 import pymorphy2
+
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tqdm import tqdm
 
 
@@ -91,10 +89,10 @@ class Parser():
         return reference
 
 
-if __name__ == '__main__':
-    args = OmegaConf.load('default.yaml')
-    html = requests.get(args.istina_people).text
-    soup = BeautifulSoup(html, 'html.parser')
-    reference = Parser.istina_parser(soup)['publishes']
-    vocabulary = Parser.get_dict(reference)
-    print(len(vocabulary), vocabulary[:10])
+# if __name__ == '__main__':
+#     args = OmegaConf.load('default.yaml')
+#     html = requests.get(args.istina_people).text
+#     soup = BeautifulSoup(html, 'html.parser')
+#     reference = Parser.istina_parser(soup)['publishes']
+#     vocabulary = Parser.get_dict(reference)
+#     print(len(vocabulary), vocabulary[:10])
