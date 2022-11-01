@@ -7,8 +7,9 @@ if __name__ == '__main__':
     args = OmegaConf.load('default.yaml')
     html = requests.get(args.istina_people).text
     soup = BeautifulSoup(html, 'html.parser')
-    reference = Parser.istina_parser(soup)['publishes']
-    vocabulary = Parser.get_dict(reference)
+    parser = Parser()
+    reference = parser.istina_parser(soup)['publishes']
+    vocabulary = parser.get_vocab(reference)
     print(len(vocabulary), vocabulary[:10])
 
 # not work whis import

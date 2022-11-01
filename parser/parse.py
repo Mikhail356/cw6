@@ -1,4 +1,3 @@
-import requests
 import re
 import nltk
 import pymorphy2
@@ -7,13 +6,15 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tqdm import tqdm
 
 
-class Parser():
+class Parser:
 
-    def istina_parser(soup):
+    def __init__(self) -> None:
+        pass
 
+    def istina_parser(self, soup):
         #
-        # Parse Istina man page and return him piblishes,
-        # collaborators and also tags of html document
+        # Parse Istina man page and return it's piblishes
+        # and collaborators
         #
         publishes = []
         coauthors = []
@@ -46,25 +47,30 @@ class Parser():
         return {'publishes': publishes,
                 'coauthors': coauthors}
 
-    def get_dict(reference):
+    def remove_numbers(self, word_vector):
+        tmp = []
+        pattern_roman = r"(?<=^)m{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})(?=$)"
+        pattern_arabic = r"\d+"
+
+        for word in word_vector:
+            if not (
+                re.match(pattern_roman, word) or re.match(pattern_arabic, word)
+            ):
+                tmp.append(word)
+
+        word_vector = tmp
+        return word_vector
+
+    def get_vocab(self, reference):
         """
         Lemmatization and cleaning input list of reference vocabulary
         """
-        stopwords = nltk.corpus.stopwords.words("russian")
-        vectorizer = CountVectorizer(analyzer='word', stop_words=stopwords)
+
+        vectorizer = CountVectorizer(analyzer='word')
         vectorizer.fit_transform(reference)
         reference = vectorizer.get_feature_names_out()
 
-        stopwords = nltk.corpus.stopwords.words("english")
-        vectorizer = CountVectorizer(analyzer='word', stop_words=stopwords)
-        vectorizer.fit_transform(reference)
-        reference = vectorizer.get_feature_names_out()
-
-        tmp = []
-        for i in reference:
-            if not re.match('\d+', i):
-                tmp.append(i)
-        reference = tmp
+        reference = self.remove_numbers(reference)
 
         stem = nltk.stem.WordNetLemmatizer()
         morph = pymorphy2.MorphAnalyzer()
@@ -77,22 +83,11 @@ class Parser():
         reference = tmp
 
         stopwords = nltk.corpus.stopwords.words("russian")
-        vectorizer = CountVectorizer(analyzer='word', stop_words=stopwords)
-        vectorizer.fit_transform(reference)
-        reference = vectorizer.get_feature_names_out()
+        stopwords += nltk.corpus.stopwords.words("english")
+        stopwords.append('хх')
 
-        stopwords = nltk.corpus.stopwords.words("english")
         vectorizer = CountVectorizer(analyzer='word', stop_words=stopwords)
         vectorizer.fit_transform(reference)
         reference = vectorizer.get_feature_names_out()
 
         return reference
-
-
-# if __name__ == '__main__':
-#     args = OmegaConf.load('default.yaml')
-#     html = requests.get(args.istina_people).text
-#     soup = BeautifulSoup(html, 'html.parser')
-#     reference = Parser.istina_parser(soup)['publishes']
-#     vocabulary = Parser.get_dict(reference)
-#     print(len(vocabulary), vocabulary[:10])
