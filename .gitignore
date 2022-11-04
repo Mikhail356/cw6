@@ -130,5 +130,5 @@ dmypy.json
 
 # My ignore
 *.pdf 
-*.ipynb
+# *.ipynb
 /papers*

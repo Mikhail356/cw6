@@ -5,19 +5,24 @@ import pymorphy2
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from tqdm import tqdm
 
+from readability import Document
+from bs4 import BeautifulSoup
+
 
 class Parser:
 
     def __init__(self) -> None:
         pass
 
-    def istina_parser(self, soup):
+    def istina_parser(self, html):
         #
         # Parse Istina man page and return it's piblishes
         # and collaborators
         #
         publishes = []
         coauthors = []
+        place = []
+        soup = BeautifulSoup(html, 'html.parser')
         tags = {tag.name for tag in soup.find_all()}
         for tag in tags:
 
@@ -25,6 +30,8 @@ class Parser:
             for i in soup.find_all(tag):
                 # if tag has attribute of class
                 if i.has_attr("class") and len(i['class']) != 0:
+                    for t in i.find_all('h4')[:3]:
+                        place.append(t.text)
                     if i['class'][0] == 'activity':
                         publishes.append(i.li.a.text)
                     elif i['class'][0] == 'span-21':
@@ -45,7 +52,11 @@ class Parser:
                                     filter(lambda x: len(x) > 0, coauthors))
 
         return {'publishes': publishes,
-                'coauthors': coauthors}
+                'coauthors': coauthors,
+                'place': place, }
+
+    def common_parser(self, html):
+        return BeautifulSoup(Document(html).summary(), 'html.parser').text.replace('\n', ' ').replace('\xa0', ' ')
 
     def remove_numbers(self, word_vector):
         tmp = []
@@ -61,7 +72,7 @@ class Parser:
         word_vector = tmp
         return word_vector
 
-    def get_vocab(self, reference):
+    def get_vocab(self, reference: list):
         """
         Lemmatization and cleaning input list of reference vocabulary
         """
@@ -75,7 +86,7 @@ class Parser:
         stem = nltk.stem.WordNetLemmatizer()
         morph = pymorphy2.MorphAnalyzer()
         tmp = []
-        for word in tqdm(reference):
+        for word in reference:
             if re.match('[a-zA-Z]+', word):
                 tmp.append(stem.lemmatize(word))
             else:
