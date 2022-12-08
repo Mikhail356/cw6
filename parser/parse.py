@@ -11,8 +11,8 @@ from bs4 import BeautifulSoup
 
 class Parser:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, pars_type='html.parser') -> None:
+        self.parser_type = pars_type
 
     def istina_parser(self, html):
         #
@@ -22,7 +22,7 @@ class Parser:
         publishes = []
         coauthors = []
         place = []
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, self.parser_type)
         tags = {tag.name for tag in soup.find_all()}
         for tag in tags:
 
